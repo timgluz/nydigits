@@ -12,6 +12,21 @@ const (
 	Divide
 )
 
+func (op Operator) String() string {
+	switch op {
+	case Plus:
+		return "+"
+	case Minus:
+		return "-"
+	case Times:
+		return "*"
+	case Divide:
+		return "/"
+	default:
+		return ""
+	}
+}
+
 type Solution struct {
 	Value  int
 	Target int
@@ -133,7 +148,8 @@ func Solve(target int, digits []int) (Solution, error) {
 	queue := []*Node{root}
 
 	var solutionNode *Node
-	for len(queue) > 0 {
+	finished := false
+	for !finished && len(queue) > 0 {
 		currentNode := queue[0]
 		queue = queue[1:]
 
@@ -147,7 +163,9 @@ func Solve(target int, digits []int) (Solution, error) {
 		// add new nodes to queue
 		for _, child := range currentNode.Children {
 			if child.Value == target {
+				fmt.Println("Found solution: ", child.Value)
 				solutionNode = child
+				finished = true
 				break
 			}
 
@@ -159,8 +177,10 @@ func Solve(target int, digits []int) (Solution, error) {
 		bestSolution.Value = solutionNode.Value
 		path := ""
 		for node := solutionNode; node != nil; node = node.Parent {
-			path = fmt.Sprintf("%d %v", node.Digit, node.Op) + path
+			path = fmt.Sprintf("%s %d %s", node.Op, node.Digit, path)
 		}
+
+		bestSolution.Path = path
 	}
 
 	return bestSolution, nil

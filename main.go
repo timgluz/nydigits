@@ -1,18 +1,40 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 
-	"github.com/timgluz/pkg/nydigits"
+	nydigits "github.com/timgluz/nydigits/pkg"
 )
 
+func parseDigits(args []string) []int {
+	digits := make([]int, len(args))
+	for i, arg := range args {
+		fmt.Sscanf(arg, "%d", &digits[i])
+	}
+	return digits
+}
+
 func main() {
-	target := 62
-	digits := []int{1, 2, 3, 4, 5, 10}
-	solution, err := nydigits.Solve(target, digits)
-	if err != nil {
-		fmt.Errorf("Error: %v", err)
+	var target = flag.Int("target", 0, "Target number")
+	flag.Parse()
+
+	if *target < 1 {
+		fmt.Println("Target must be a positive integer")
+		return
 	}
 
-	fmt.Println("Solution: %d, %s", solution.Value, solution.Path)
+	digits := parseDigits(flag.Args())
+	if len(digits) == 0 {
+		fmt.Println("No digits provided")
+		return
+	}
+
+	solution, err := nydigits.Solve(*target, digits)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	fmt.Printf("Solution:  %s\n", solution.Path)
 }
