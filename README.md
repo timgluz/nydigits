@@ -6,6 +6,7 @@ Small proof-of-concept how [NY/Times Digits](https://www.nytimes.com/games/digit
 ## TODO:
 
 - [ ] Tests
+- [ ] fix use of duplicate values
 - [ ] Look for optimal solution
 - [ ] Show operations
 - [ ] Add pruning
