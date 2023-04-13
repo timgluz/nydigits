@@ -8,6 +8,8 @@ Small proof-of-concept how [NY/Times Digits](https://www.nytimes.com/games/digit
 - [x] fix use of duplicate values
 - [x] Show operations
 - [ ] Tests
+- [ ] Add Goreleaser and release binaries
+- [ ] Spin
 - [ ] Look for optimal solution
 - [ ] Add pruning (no need, search space is so small)
 
