@@ -36,6 +36,8 @@ func main() {
 		return
 	}
 
+	fmt.Println("----------------------------------")
+	fmt.Println("NY-Digits Solver")
 	fmt.Printf("Target:   %d\n", solution.Target)
 	fmt.Printf("Distance: %d\n", solution.Target-solution.Value)
 	fmt.Println("----------------------------------")

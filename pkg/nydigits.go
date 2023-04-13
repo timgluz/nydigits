@@ -34,6 +34,10 @@ func (op Operator) Apply(a, b int) (int, error) {
 	case Plus:
 		return a + b, nil
 	case Minus:
+		if a < b {
+			return 0, fmt.Errorf("Can't subtract %d from %d", b, a)
+		}
+
 		return a - b, nil
 	case Times:
 		return a * b, nil
@@ -66,6 +70,15 @@ type Node struct {
 
 	UnusedDigits []int
 	Children     []*Node
+}
+
+func NewNode(value int, op Operator) *Node {
+	return &Node{
+		Parent:       nil,
+		Op:           op,
+		Value:        value,
+		UnusedDigits: []int{},
+	}
 }
 
 func (n *Node) AddChild(op Operator, digit int) error {
@@ -113,14 +126,16 @@ func cloneWithout(slice []int, value int) []int {
 }
 
 func Solve(target int, digits []int) (Solution, error) {
-	fmt.Println("Solving NYDigits")
-
-	root := &Node{
-		Parent:       nil,
-		Op:           NoOp,
-		Value:        0,
-		UnusedDigits: digits,
+	if target < 1 {
+		return Solution{}, fmt.Errorf("Target must be a positive integer")
 	}
+
+	if len(digits) == 0 {
+		return Solution{}, fmt.Errorf("No digits given")
+	}
+
+	root := NewNode(0, NoOp)
+	root.UnusedDigits = digits
 
 	bestSolution := Solution{
 		Value:  0,
@@ -147,7 +162,6 @@ func Solve(target int, digits []int) (Solution, error) {
 		// add new nodes to queue
 		for _, child := range currentNode.Children {
 			if child.Value == target {
-				fmt.Println("Found solution: ", child.Value)
 				solutionNode = child
 				finished = true
 				break
@@ -161,7 +175,8 @@ func Solve(target int, digits []int) (Solution, error) {
 		bestSolution.Value = solutionNode.Value
 		operations := []string{}
 		for node := solutionNode; node.Parent != nil; node = node.Parent {
-			step := fmt.Sprintf("%3d %s %3d = %3d", node.Parent.Value, node.Op, node.Digit, node.Value)
+			// TODO: use OperatorStep struct, instead of string to make testing and formatting easier
+			step := fmt.Sprintf("%d %s %d = %d", node.Parent.Value, node.Op, node.Digit, node.Value)
 
 			operations = append([]string{step}, operations...)
 		}
