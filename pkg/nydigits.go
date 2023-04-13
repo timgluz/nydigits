@@ -12,6 +12,8 @@ const (
 	Divide
 )
 
+var ops = [4]Operator{Plus, Minus, Times, Divide}
+
 func (op Operator) String() string {
 	switch op {
 	case Plus:
@@ -23,14 +25,37 @@ func (op Operator) String() string {
 	case Divide:
 		return "/"
 	default:
-		return ""
+		return " "
+	}
+}
+
+func (op Operator) Apply(a, b int) (int, error) {
+	switch op {
+	case Plus:
+		return a + b, nil
+	case Minus:
+		return a - b, nil
+	case Times:
+		return a * b, nil
+	case Divide:
+		if b == 0 {
+			return 0, fmt.Errorf("Can't divide by zero")
+		}
+
+		if a%b != 0 {
+			return 0, fmt.Errorf("Can't divide %d by %d", a, b)
+		}
+
+		return a / b, nil
+	default:
+		return 0, fmt.Errorf("Unknown operator")
 	}
 }
 
 type Solution struct {
-	Value  int
-	Target int
-	Path   string
+	Value      int
+	Target     int
+	Operations []string
 }
 
 type Node struct {
@@ -39,124 +64,83 @@ type Node struct {
 	Value  int
 	Digit  int
 
-	Children []*Node
+	UnusedDigits []int
+	Children     []*Node
 }
 
-func (n *Node) AddChild(op Operator, digit int) bool {
+func (n *Node) AddChild(op Operator, digit int) error {
 	if n.Digit == digit {
-		return false
+		return fmt.Errorf("Can't add child with same digit")
 	}
 
-	switch op {
-	case Plus:
-		return n.AddPlusChild(digit)
-	case Minus:
-		return n.AddMinusChild(digit)
-	case Times:
-		return n.AddTimesChild(digit)
-	case Divide:
-		return n.AddDivideChild(digit)
-	default:
-		return false
+	newValue, err := op.Apply(n.Value, digit)
+	if err != nil {
+		return err
 	}
-}
 
-func (n *Node) AddPlusChild(digit int) bool {
+	if newValue < 1 {
+		return fmt.Errorf("Only positive values are allowed")
+	}
+
+	newUnusedDigits := cloneWithout(n.UnusedDigits, digit)
+
 	child := &Node{
-		Parent: n,
-		Op:     Plus,
-		Value:  n.Value + digit,
-		Digit:  digit,
+		Parent:       n,
+		Op:           op,
+		Value:        newValue,
+		Digit:        digit,
+		UnusedDigits: newUnusedDigits,
 	}
 
 	n.Children = append(n.Children, child)
-	return true
+	return nil
 }
 
-func (n *Node) AddMinusChild(digit int) bool {
-	if n.Value <= digit {
-		return false
+// cloneWithout returns a new slice with the given value removed
+func cloneWithout(slice []int, value int) []int {
+	if len(slice) == 0 {
+		return []int{}
 	}
 
-	child := &Node{
-		Parent: n,
-		Op:     Minus,
-		Value:  n.Value - digit,
-		Digit:  digit,
+	newSlice := make([]int, 0, len(slice)-1)
+	for _, v := range slice {
+		if v != value {
+			newSlice = append(newSlice, v)
+		}
 	}
 
-	n.Children = append(n.Children, child)
-	return true
-}
-
-func (n *Node) AddTimesChild(digit int) bool {
-	if n.Value == 0 || digit == 0 {
-		return false
-	}
-
-	child := &Node{
-		Parent: n,
-		Op:     Times,
-		Value:  n.Value * digit,
-		Digit:  digit,
-	}
-
-	n.Children = append(n.Children, child)
-	return true
-}
-
-func (n *Node) AddDivideChild(digit int) bool {
-	if n.Value == 0 || digit == 0 {
-		return false
-	}
-
-	if n.Value < digit {
-		return false
-	}
-
-	if n.Value%digit != 0 {
-		return false
-	}
-
-	child := &Node{
-		Parent: n,
-		Op:     Divide,
-		Value:  n.Value / digit,
-		Digit:  digit,
-	}
-
-	n.Children = append(n.Children, child)
-	return true
+	return newSlice
 }
 
 func Solve(target int, digits []int) (Solution, error) {
 	fmt.Println("Solving NYDigits")
 
 	root := &Node{
-		Parent: nil,
-		Op:     NoOp,
-		Value:  0,
+		Parent:       nil,
+		Op:           NoOp,
+		Value:        0,
+		UnusedDigits: digits,
 	}
 
-	ops := []Operator{Plus, Minus, Times, Divide}
 	bestSolution := Solution{
 		Value:  0,
 		Target: target,
-		Path:   "",
 	}
 
-	queue := []*Node{root}
+	frontier := []*Node{root}
 
 	var solutionNode *Node
 	finished := false
-	for !finished && len(queue) > 0 {
-		currentNode := queue[0]
-		queue = queue[1:]
+	for !finished && len(frontier) > 0 {
+		currentNode := frontier[0]
+		frontier = frontier[1:]
 
 		// add childs to new node
 		for _, op := range ops {
-			for _, digit := range digits {
-				currentNode.AddChild(op, digit)
+			for _, digit := range currentNode.UnusedDigits {
+				if err := currentNode.AddChild(op, digit); err != nil {
+					continue
+				}
 			}
 		}
 
@@ -169,18 +153,20 @@ func Solve(target int, digits []int) (Solution, error) {
 				break
 			}
 
-			queue = append(queue, child)
+			frontier = append(frontier, child)
 		}
 	}
 
 	if solutionNode != nil {
 		bestSolution.Value = solutionNode.Value
-		path := ""
-		for node := solutionNode; node != nil; node = node.Parent {
-			path = fmt.Sprintf("%s %d %s", node.Op, node.Digit, path)
+		operations := []string{}
+		for node := solutionNode; node.Parent != nil; node = node.Parent {
+			step := fmt.Sprintf("%3d %s %3d = %3d", node.Parent.Value, node.Op, node.Digit, node.Value)
+
+			operations = append([]string{step}, operations...)
 		}
 
-		bestSolution.Path = path
+		bestSolution.Operations = operations
 	}
 
 	return bestSolution, nil

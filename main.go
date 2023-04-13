@@ -36,5 +36,16 @@ func main() {
 		return
 	}
 
-	fmt.Printf("Solution:  %s\n", solution.Path)
+	fmt.Printf("Target:   %d\n", solution.Target)
+	fmt.Printf("Distance: %d\n", solution.Target-solution.Value)
+	fmt.Println("----------------------------------")
+	fmt.Printf("Operations:\n")
+	for i, step := range solution.Operations {
+		if i == 0 {
+			continue // Skip the first step
+		}
+
+		fmt.Printf("\t%d: %s\n", i, step)
+	}
+
 }
