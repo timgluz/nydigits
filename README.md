@@ -1,5 +1,7 @@
 # Little solver of the NY/Times digits;
 
+[![Go](https://github.com/timgluz/nydigits/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/timgluz/nydigits/actions/workflows/go.yml)
+
 Small proof-of-concept how [NY/Times Digits](https://www.nytimes.com/games/digits) could be solved programmatically.
 
 
