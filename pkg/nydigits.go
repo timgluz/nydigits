@@ -56,10 +56,20 @@ func (op Operator) Apply(a, b int) (int, error) {
 	}
 }
 
+type OperationStep struct {
+	Op        Operator
+	Digit     int
+	PrevValue int
+	Value     int
+}
+
+func (s OperationStep) String() string {
+	return fmt.Sprintf("%d %s %d = %d", s.PrevValue, s.Op, s.Digit, s.Value)
+}
+
 type Solution struct {
 	Value      int
-	Target     int
-	Operations []string
+	Operations []OperationStep
 }
 
 type Node struct {
@@ -109,6 +119,26 @@ func (n *Node) AddChild(op Operator, digit int) error {
 	return nil
 }
 
+func (n *Node) Steps() []OperationStep {
+	steps := []OperationStep{}
+
+	currentNode := n
+	for currentNode.Parent != nil {
+		step := OperationStep{
+			Op:        currentNode.Op,
+			Digit:     currentNode.Digit,
+			PrevValue: currentNode.Parent.Value,
+			Value:     currentNode.Value,
+		}
+
+		steps = append([]OperationStep{step}, steps...)
+
+		currentNode = currentNode.Parent
+	}
+
+	return steps
+}
+
 // cloneWithout returns a new slice with the given value removed
 func cloneWithout(slice []int, value int) []int {
 	if len(slice) == 0 {
@@ -124,7 +154,6 @@ func cloneWithout(slice []int, value int) []int {
 
 	return newSlice
 }
-
 func Solve(target int, digits []int) (Solution, error) {
 	if target < 1 {
 		return Solution{}, fmt.Errorf("Target must be a positive integer")
@@ -138,8 +167,7 @@ func Solve(target int, digits []int) (Solution, error) {
 	root.UnusedDigits = digits
 
 	bestSolution := Solution{
-		Value:  0,
-		Target: target,
+		Value: 0,
 	}
 
 	frontier := []*Node{root}
@@ -173,15 +201,7 @@ func Solve(target int, digits []int) (Solution, error) {
 
 	if solutionNode != nil {
 		bestSolution.Value = solutionNode.Value
-		operations := []string{}
-		for node := solutionNode; node.Parent != nil; node = node.Parent {
-			// TODO: use OperatorStep struct, instead of string to make testing and formatting easier
-			step := fmt.Sprintf("%d %s %d = %d", node.Parent.Value, node.Op, node.Digit, node.Value)
-
-			operations = append([]string{step}, operations...)
-		}
-
-		bestSolution.Operations = operations
+		bestSolution.Operations = solutionNode.Steps()
 	}
 
 	return bestSolution, nil

@@ -1,6 +1,9 @@
 package nydigits
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestOperatorString(t *testing.T) {
 	var tests = []struct {
@@ -91,13 +94,13 @@ func slicesEqual(a, b []int) bool {
 	return true
 }
 
-func stringSlicesEqual(a, b []string) bool {
+func operationsEqual(a, b []OperationStep) bool {
 	if len(a) != len(b) {
 		return false
 	}
 
 	for i := range a {
-		if a[i] != b[i] {
+		if !reflect.DeepEqual(a[i], b[i]) {
 			return false
 		}
 	}
@@ -147,7 +150,7 @@ func TestSolve(t *testing.T) {
 	}{
 		{0, []int{0}, Solution{}, true},
 		{1, []int{}, Solution{}, true},
-		{1, []int{1}, Solution{Operations: []string{"0 + 1 = 1"}}, false},
+		{1, []int{1}, Solution{Operations: []OperationStep{{Op: Plus, Digit: 1, PrevValue: 0, Value: 1}}}, false},
 	}
 
 	for _, test := range tests {
@@ -160,7 +163,7 @@ func TestSolve(t *testing.T) {
 			t.Errorf("Solve(%d, %v) = %v, want %v", test.target, test.digits, err, test.expected)
 		}
 
-		if !stringSlicesEqual(got.Operations, test.expected.Operations) {
+		if !operationsEqual(got.Operations, test.expected.Operations) {
 			t.Errorf(
 				"Solve(%d, %v) = %v, want %v",
 				test.target, test.digits, got.Operations, test.expected.Operations,
