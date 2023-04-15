@@ -1,0 +1,24 @@
+spin_manifest_version = "1"
+name = "nydigits"
+trigger = { type = "http", base = "/"}
+version = "0.0.1"
+
+[[component]]
+id = "solver"
+source = "dist/solver.wasm"
+
+[component.trigger]
+route = "/solve"
+
+[component.build]
+command = "tinygo build -target=wasi -gc=leaking -no-debug -o dist/solver.wasm spin/solver.go"
+
+[[component]]
+id = "main"
+source = "dist/main.wasm"
+
+[component.trigger]
+route = "/..."
+
+[component.build]
+command = "tinygo build -target=wasi -gc=leaking -no-debug -o dist/main.wasm spin/main.go"

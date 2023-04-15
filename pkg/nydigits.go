@@ -56,6 +56,7 @@ func (op Operator) Apply(a, b int) (int, error) {
 	}
 }
 
+//easyjson:json
 type OperationStep struct {
 	Op        Operator `json:"op"`
 	Digit     int      `json:"digit"`
@@ -67,9 +68,32 @@ func (s OperationStep) String() string {
 	return fmt.Sprintf("%d %s %d = %d", s.PrevValue, s.Op, s.Digit, s.Value)
 }
 
+//easyjson:json
 type Solution struct {
 	Value      int             `json:"value"`
 	Operations []OperationStep `json:"operations"`
+}
+
+//easyjson:json
+type Problem struct {
+	Target int   `json:"target"`
+	Digits []int `json:"digits"`
+}
+
+func (p Problem) Validate() error {
+	if p.Target < 1 || p.Target > 1000 {
+		return fmt.Errorf("target must be between 1 and 1000")
+	}
+
+	if len(p.Digits) == 0 {
+		return fmt.Errorf("digits can not be empty")
+	}
+
+	if len(p.Digits) > 10 {
+		return fmt.Errorf("digits must be a slice of length of 6, max 10")
+	}
+
+	return nil
 }
 
 type Node struct {
@@ -153,6 +177,10 @@ func cloneWithout(slice []int, value int) []int {
 	}
 
 	return newSlice
+}
+
+func SolveProblem(p Problem) (Solution, error) {
+	return Solve(p.Target, p.Digits)
 }
 
 func Solve(target int, digits []int) (Solution, error) {

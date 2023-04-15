@@ -11,9 +11,12 @@ could be solved programmatically.
 - [x] Show operations
 - [x] Tests
 - [x] Taskfile
-- [ ] Goreleaser
-- [ ] Spin
-- [ ] Look for optimal solution
+- [x] Goreleaser
+- [x] Spin
+- [ ] Comprehensive search to find solution with smallest steps
+- [ ] Allow to search solutions in reach 10, 25 if no exact match
+- [ ] Add archive endpoint for previous puzzles
+- [ ] ...
 
 ## Usage
 
@@ -41,4 +44,26 @@ and use the compiled binary to avoid rebuilding it all the time;
 task build
 
 ./bin/nydigits --target 93 5 7 9 10 15 25
+```
+
+## Running Spin
+
+[Spin](https://developer.fermyon.com/spin/index) is fantastic project that allows to run and deploy Go applications as serverless applications;
+
+* first build WASM files for each API resource
+
+```bash
+task spin:build
+```
+
+* start Spin
+
+```bash
+task spin:up
+```
+
+* run E2E tests
+
+```
+task test:e2e
 ```

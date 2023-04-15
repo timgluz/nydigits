@@ -5,8 +5,12 @@ tasks:
     cmds:
       - go mod tidy
 
+  "generate:easyjson":
+    cmds:
+      - easyjson -all pkg/nydigits.go
+
   build:
-    deps: [deps, lint, test]
+    deps: [deps, "generate:easyjson", lint, test]
     cmds:
       - go build -v -o bin/nydigits
 
@@ -17,6 +21,22 @@ tasks:
   test:
     cmds:
       - go test -v ./...
+
+  "test:e2e":
+    preconditions:
+      - sh: 'curl http://localhost:3000'
+    cmds:
+      - hurl --test --glob "test/e2e/**/*.hurl"
+
+  "spin:build":
+    deps: [deps, "generate:easyjson"]
+    cmds:
+      - spin build
+      - echo "Build done, you can execute spin up now"
+
+  "spin:up":
+    cmds:
+      - spin up
 
   "release:local":
     cmds:
