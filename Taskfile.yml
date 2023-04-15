@@ -22,6 +22,11 @@ tasks:
     cmds:
       - goreleaser check
       - goreleaser build --single-target
+  "release:snapshot":
+    cmds:
+      - echo "releasing snapshot without tagging release"
+      - goreleaser release --snapshot
+
   "release:github":
     env:
       GITHUB_TOKEN: ""
