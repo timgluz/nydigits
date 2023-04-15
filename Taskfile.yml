@@ -1,10 +1,37 @@
 version: '3'
 
 tasks:
+  deps:
+    cmds:
+      - go mod tidy
+
   build:
+    deps: [deps, lint, test]
     cmds:
       - go build -v -o bin/nydigits
+
+  lint:
+    cmds:
+      - golangci-lint run
 
   test:
     cmds:
       - go test -v ./...
+
+  "release:local":
+    cmds:
+      - goreleaser check
+      - goreleaser build --single-target
+  "release:github":
+    env:
+      GITHUB_TOKEN: ""
+    vars:
+      NEXT_VERSION:
+        sh: svu next
+    preconditions:
+      - sh: '[ -n "$GITHUB_TOKEN" ]'
+    cmds:
+      - echo "releasing {{.NEXT_VERSION}}"
+      - git tag "{{.NEXT_VERSION}}"
+      - git push --tags
+      - goreleaser --clean
