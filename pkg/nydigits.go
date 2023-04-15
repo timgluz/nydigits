@@ -57,10 +57,10 @@ func (op Operator) Apply(a, b int) (int, error) {
 }
 
 type OperationStep struct {
-	Op        Operator
-	Digit     int
-	PrevValue int
-	Value     int
+	Op        Operator `json:"op"`
+	Digit     int      `json:"digit"`
+	PrevValue int      `json:"prev_value"`
+	Value     int      `json:"value"`
 }
 
 func (s OperationStep) String() string {
@@ -68,8 +68,8 @@ func (s OperationStep) String() string {
 }
 
 type Solution struct {
-	Value      int
-	Operations []OperationStep
+	Value      int             `json:"value"`
+	Operations []OperationStep `json:"operations"`
 }
 
 type Node struct {
@@ -154,6 +154,7 @@ func cloneWithout(slice []int, value int) []int {
 
 	return newSlice
 }
+
 func Solve(target int, digits []int) (Solution, error) {
 	if target < 1 {
 		return Solution{}, fmt.Errorf("Target must be a positive integer")
