@@ -32,6 +32,30 @@ func run(target int, digits []int) (nydigits.Solution, error) {
 	return solution, nil
 }
 
+func main() {
+	var target = flag.Int("target", 0, "Target number")
+	var format = flag.String("format", "text", "Output format")
+	flag.Parse()
+
+	digits := parseDigits(flag.Args())
+	if len(digits) == 0 {
+		fmt.Println("No digits provided")
+		return
+	}
+
+	solution, err := run(*target, digits)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	switch *format {
+	case "json":
+		showSolutionJSON(solution)
+	default:
+		showSolution(solution, *target, digits)
+	}
+}
+
 func showSolution(solution nydigits.Solution, target int, digits []int) {
 	fmt.Println("----------------------------------")
 	fmt.Println("NY-Digits Solver")
@@ -49,20 +73,11 @@ func showSolution(solution nydigits.Solution, target int, digits []int) {
 	}
 }
 
-func main() {
-	var target = flag.Int("target", 0, "Target number")
-	flag.Parse()
-
-	digits := parseDigits(flag.Args())
-	if len(digits) == 0 {
-		fmt.Println("No digits provided")
-		return
-	}
-
-	solution, err := run(*target, digits)
+func showSolutionJSON(solution nydigits.Solution) {
+	buf, err := solution.MarshalJSON()
 	if err != nil {
-		fmt.Println("Error:", err)
+		panic(err)
 	}
 
-	showSolution(solution, *target, digits)
+	fmt.Println(string(buf))
 }
